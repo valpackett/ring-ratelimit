@@ -7,5 +7,6 @@
   :plugins [[speclj "2.5.0"]]
   :bootclasspath true
   :profiles {:dev {:dependencies [[speclj "2.5.0"]
-                                  [ring-mock "0.1.3"]]}}
+                                  [ring-mock "0.1.3"]
+                                  [com.taoensso/carmine "1.3.0"]]}}
   :test-paths ["spec/"])

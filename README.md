@@ -5,22 +5,46 @@ Ring middleware for request rate limiting.
 ## Usage
 
 ```clojure
-(ns your.app
-  (:use [ring.middleware ratelimit]))
+; ...your ns...
+(:use [ring.middleware ratelimit])
+; ...
 
 (def app (-> your-routes-or-whatever
              (wrap-ratelimit {:limit 100})))
 ; 100 per hour per IP address
-
-
-; You can use a custom handler for the error (when the user has no requests left):
-(def app (-> your-routes-or-whatever
-             (wrap-ratelimit
-               {:limit 100
-                :err-handler (fn [req] {:status 429
-                                        :headers {"Content-Type" "text/html"}
-                                        :body (your-error-template {:text "Too many requests"})})})))
 ```
+
+You can use a custom handler for the error (when the user has no requests left):
+
+```clojure
+; ...
+
+(defn err-handler [req]
+  {:status 429
+   :headers {"Content-Type" "text/html"}
+   :body (your-error-template {:text "Too many requests"})})
+
+; ...wrapping thing skipped...
+(wrap-ratelimit {:limit 100
+                 :err-handler err-handler})
+```
+
+If you're running your app on multiple JVM instances (eg. multiple Heroku dynos), the default backend (local atom) is not enough for you.
+ring-ratelimit supports Redis via the [Carmine](https://github.com/ptaoussanis/carmine) library.
+
+```clojure
+; ...your ns...
+(:use [ring.middleware ratelimit]
+      [ring.middleware.ratelimit redis])
+; ...
+
+; ...wrapping thing skipped...
+(wrap-ratelimit {:limit 100
+                 :backend (redis-backend pool spec)})
+```
+
+The `redis-backend` function, when called with no args, calls `make-conn-pool` and `make-conn-spec` with no args (ie. uses Redis on localhost) and uses `ratelimits` for Redis hash name.
+You can provide the Carmine configuration objects (pool, spec) and the hash name as args.
 
 ## License
 
