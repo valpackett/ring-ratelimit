@@ -31,6 +31,7 @@ You can use a custom handler for the error (when the user has no requests left):
 
 If you're running your app on multiple JVM instances (eg. multiple Heroku dynos), the default backend (local atom) is not enough for you.
 ring-ratelimit supports Redis via the [Carmine](https://github.com/ptaoussanis/carmine) library.
+**Don't forget to add it to your dependencies!**
 
 ```clojure
 ; ...your ns...
