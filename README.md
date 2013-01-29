@@ -10,6 +10,16 @@ Ring middleware for request rate limiting.
 
 (def app (-> your-routes-or-whatever
              (wrap-ratelimit {:limit 100})))
+; 100 per hour per IP address
+
+
+; You can use a custom handler for the error (when the user has no requests left):
+(def app (-> your-routes-or-whatever
+             (wrap-ratelimit
+               {:limit 100
+                :err-handler (fn [req] {:status 429
+                                        :headers {"Content-Type" "text/html"}
+                                        :body (your-error-template {:text "Too many requests"})})})))
 ```
 
 ## License
