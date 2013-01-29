@@ -2,16 +2,20 @@
   (:import [java.util Date])
   (:use [speclj core]
         [ring.middleware ratelimit]
+        [ring.middleware.ratelimit backend local-atom]
         [ring.mock request]))
+
+(def backend (local-atom-backend))
 
 (def app (-> (fn [req] {:status 418
                         :headers {"Content-Type" "air/plane"}
                         :body "Hello"})
-             (wrap-ratelimit {:limit 5})))
+             (wrap-ratelimit {:limit 5
+                              :backend backend})))
 
 (describe "ratelimit"
   (before
-    (reset-ratelimit!))
+    (reset-limits! backend))
 
   (it "shows the rate limit"
     (let [rsp (-> (request :get "/") app)]
