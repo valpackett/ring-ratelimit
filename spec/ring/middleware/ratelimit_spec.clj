@@ -3,7 +3,7 @@
   (:require [clojure.string :as string])
   (:use [speclj core]
         [ring.middleware ratelimit]
-        [ring.middleware.ratelimit backend local-atom redis]
+        [ring.middleware.ratelimit util backend local-atom redis]
         [ring.mock request]))
 
 (doseq [backend [(local-atom-backend) (redis-backend)]]
@@ -15,7 +15,7 @@
 
     (describe (str "ratelimit <" (last (string/split (str (type backend)) #"\.")) ">")
       (before
-        (reset-limits! backend))
+        (reset-limits! backend (current-hour)))
 
       (it "shows the rate limit"
         (let [rsp (-> (request :get "/") app)]
@@ -30,7 +30,7 @@
           (should= "0" (get-in rsp [:headers "X-RateLimit-Remaining"]))))
 
       (it "resets the limit every hour"
-        (with-redefs [get-hour (fn [] (- (.getHours (Date.)) 1))]
+        (with-redefs [current-hour (fn [] (- (.getHours (Date.)) 1))]
           (dotimes [_ 5] (-> (request :get "/") app))
           (should= 429 (-> (request :get "/") app :status)))
         (should= 418 (-> (request :get "/") app :status))))))

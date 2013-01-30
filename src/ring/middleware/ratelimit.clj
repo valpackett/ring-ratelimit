@@ -1,11 +1,5 @@
 (ns ring.middleware.ratelimit
-  (:import [java.util Date])
-  (:use [ring.middleware.ratelimit backend local-atom]))
-
-(defn get-hour []
-  (.getHours (Date.)))
-
-(def last-hour (atom (get-hour)))
+  (:use [ring.middleware.ratelimit util backend local-atom]))
 
 (def default-config
   {:limit 100
@@ -23,9 +17,8 @@
          backend (:backend config*)
          err-handler (:err-handler config*)]
      (fn [req]
-       (when (not= @last-hour (get-hour))
-         (reset-limits! backend)
-         (swap! last-hour (fn [_] (get-hour))))
+       (when (not= (get-hour backend) (current-hour))
+         (reset-limits! backend (current-hour)))
        (let [ip (:remote-addr req)
              current (get-limit backend limit ip)
              rl-headers {"X-RateLimit-Limit" (str limit)

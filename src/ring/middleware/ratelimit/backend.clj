@@ -2,4 +2,5 @@
 
 (defprotocol Backend
   (get-limit [self limit k])
-  (reset-limits! [self]))
+  (reset-limits! [self hour])
+  (get-hour [self]))
