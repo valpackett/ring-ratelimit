@@ -1,6 +1,10 @@
 (ns ring.middleware.ratelimit-spec
   (:import [java.util Date])
-  (:require [clojure.string :as string])
+  (:require [clojure.string :as string]
+            [cemerick.friend :as friend]
+            (cemerick.friend [workflows :as workflows]
+                             [credentials :as creds]
+                             [openid :as openid]))
   (:use [speclj core]
         [ring.middleware ratelimit]
         [ring.middleware.ratelimit util backend local-atom redis]
@@ -34,3 +38,29 @@
           (dotimes [_ 5] (-> (request :get "/") app))
           (should= 429 (-> (request :get "/") app :status)))
         (should= 418 (-> (request :get "/") app :status))))))
+
+; why do I test with real friend?
+
+(let [api-users {"api-key" {:username "api-key"
+                            :password (creds/hash-bcrypt "api-pass")
+                            :roles #{:api}}}
+      app (-> (fn [req] {:status 200
+                         :headers {"Content-Type" "text/plain"}
+                         :body (with-out-str (pr req))})
+              (wrap-ratelimit {:limits [(user-limit 10) (ip-limit 5)]
+                               :backend (local-atom-backend)})
+              (friend/authenticate {:allow-anon? true
+                                    :workflows [(workflows/http-basic
+                                                  :credential-fn (partial creds/bcrypt-credential-fn api-users)
+                                                  :realm "test-realm")]}))]
+  (describe "ratelimit with 2 limiters"
+    (it "uses the user limit for authenticated requests"
+      (let [rsp (-> (request :get "/")
+                    (header "Authorization" "Basic YXBpLWtleTphcGktcGFzcw==")
+                    app)]
+        (should= 200 (:status rsp))
+        (should= "9" (get-in rsp [:headers "X-RateLimit-Remaining"]))))
+    (it "uses the ip limit for unauthenticated requests"
+      (let [rsp (-> (request :get "/") app)]
+        (should= 200 (:status rsp))
+        (should= "4" (get-in rsp [:headers "X-RateLimit-Remaining"]))))))

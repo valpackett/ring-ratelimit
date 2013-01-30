@@ -8,5 +8,6 @@
   :bootclasspath true
   :profiles {:dev {:dependencies [[speclj "2.5.0"]
                                   [ring-mock "0.1.3"]
+                                  [com.cemerick/friend "0.1.3"]
                                   [com.taoensso/carmine "1.3.0"]]}}
   :test-paths ["spec/"])

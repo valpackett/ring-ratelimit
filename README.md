@@ -13,6 +13,15 @@ Ring middleware for request rate limiting.
 ; 100 per hour per IP address
 ```
 
+If you're using [friend](https://github.com/cemerick/friend) authentication, you can use `user-limit`:
+
+```clojure
+(def app (-> your-routes-or-whatever
+             (wrap-ratelimit {:limits [(user-limit 500) (ip-limit 100)]})))
+; 500 per hour per user for authenticated users
+; 100 per hour per IP address for anonymous users
+```
+
 You can use a custom handler for the error (when the user has no requests left):
 
 ```clojure

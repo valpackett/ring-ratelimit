@@ -6,6 +6,11 @@
    :key-prefix "IP"
    :getter :remote-addr})
 
+(defn user-limit [n]
+  {:limit n
+   :key-prefix "U"
+   :getter #(-> % :session :cemerick.friend/identity :current)})
+
 (def default-config
   {:limits [(ip-limit 100)]
    :backend (local-atom-backend)
