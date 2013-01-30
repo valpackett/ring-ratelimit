@@ -5,9 +5,8 @@ Ring middleware for request rate limiting.
 ## Usage
 
 ```clojure
-; ...your ns...
-(:use [ring.middleware ratelimit])
-; ...
+(ns your.app
+  (:use [ring.middleware ratelimit]))
 
 (def app (-> your-routes-or-whatever
              (wrap-ratelimit {:limit 100})))
@@ -34,9 +33,9 @@ ring-ratelimit supports Redis via the [Carmine](https://github.com/ptaoussanis/c
 **Don't forget to add it to your dependencies!**
 
 ```clojure
-; ...your ns...
-(:use [ring.middleware ratelimit]
-      [ring.middleware.ratelimit redis])
+(ns your.app
+  (:use [ring.middleware ratelimit]
+        [ring.middleware.ratelimit redis]))
 ; ...
 
 ; ...wrapping thing skipped...
