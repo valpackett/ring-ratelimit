@@ -1,8 +1,13 @@
 (ns ring.middleware.ratelimit
   (:use [ring.middleware.ratelimit util backend local-atom]))
 
+(defn ip-limit [n]
+  {:limit n
+   :key-prefix "IP"
+   :getter :remote-addr})
+
 (def default-config
-  {:limit 100
+  {:limits [(ip-limit 100)]
    :backend (local-atom-backend)
    :err-handler (fn [req]
                   {:status 429
@@ -13,14 +18,16 @@
   ([handler] (wrap-ratelimit handler {}))
   ([handler config]
    (let [config* (merge default-config config)
-         limit (:limit config*)
+         limits (:limits config*)
          backend (:backend config*)
          err-handler (:err-handler config*)]
      (fn [req]
        (when (not= (get-hour backend) (current-hour))
          (reset-limits! backend (current-hour)))
-       (let [ip (:remote-addr req)
-             current (get-limit backend limit ip)
+       (let [limiter (first (filter #(not (nil? ((:getter %) req))) limits))
+             limit (:limit limiter)
+             thekey (str (:key-prefix limiter) ((:getter limiter) req))
+             current (get-limit backend limit thekey)
              rl-headers {"X-RateLimit-Limit" (str limit)
                          "X-RateLimit-Remaining" (str (- limit current))}
              h (if (< current limit) handler err-handler)

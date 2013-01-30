@@ -9,7 +9,7 @@ Ring middleware for request rate limiting.
   (:use [ring.middleware ratelimit]))
 
 (def app (-> your-routes-or-whatever
-             (wrap-ratelimit {:limit 100})))
+             (wrap-ratelimit {:limits [(ip-limit 100)]})))
 ; 100 per hour per IP address
 ```
 
@@ -24,7 +24,7 @@ You can use a custom handler for the error (when the user has no requests left):
    :body (your-error-template {:text "Too many requests"})})
 
 ; ...wrapping thing skipped...
-(wrap-ratelimit {:limit 100
+(wrap-ratelimit {:limits [(ip-limit 100)]
                  :err-handler err-handler})
 ```
 
@@ -39,7 +39,7 @@ ring-ratelimit supports Redis via the [Carmine](https://github.com/ptaoussanis/c
 ; ...
 
 ; ...wrapping thing skipped...
-(wrap-ratelimit {:limit 100
+(wrap-ratelimit {:limits [(ip-limit 100)]
                  :backend (redis-backend pool spec)})
 ```
 

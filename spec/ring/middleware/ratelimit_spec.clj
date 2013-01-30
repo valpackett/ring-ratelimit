@@ -10,7 +10,7 @@
   (let [app (-> (fn [req] {:status 418
                            :headers {"Content-Type" "air/plane"}
                            :body "Hello"})
-                (wrap-ratelimit {:limit 5
+                (wrap-ratelimit {:limits [(ip-limit 5)]
                                  :backend backend}))]
 
     (describe (str "ratelimit <" (last (string/split (str (type backend)) #"\.")) ">")
