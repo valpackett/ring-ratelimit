@@ -11,6 +11,14 @@
    :key-prefix "U"
    :getter #(-> % :session :cemerick.friend/identity :current)})
 
+(defn role-limit [r n]
+  {:limit n
+   :key-prefix (str "U" (name r))
+   :getter #(when-let [cur (-> % :session :cemerick.friend/identity :current)]
+              (if (contains? (get-in % [:session :cemerick.friend/identity :authentications cur :roles]) r)
+                cur
+                nil))})
+
 (def default-config
   {:limits [(ip-limit 100)]
    :backend (local-atom-backend)

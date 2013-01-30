@@ -43,17 +43,26 @@
 
 (let [api-users {"api-key" {:username "api-key"
                             :password (creds/hash-bcrypt "api-pass")
-                            :roles #{:api}}}
+                            :roles #{:api}}
+                 "admin" {:username "admin"
+                          :password (creds/hash-bcrypt "admin-pass")
+                          :roles #{:admin}}}
       app (-> (fn [req] {:status 200
                          :headers {"Content-Type" "text/plain"}
                          :body (with-out-str (pr req))})
-              (wrap-ratelimit {:limits [(user-limit 10) (ip-limit 5)]
+              (wrap-ratelimit {:limits [(role-limit :admin 20) (user-limit 10) (ip-limit 5)]
                                :backend (local-atom-backend)})
               (friend/authenticate {:allow-anon? true
                                     :workflows [(workflows/http-basic
                                                   :credential-fn (partial creds/bcrypt-credential-fn api-users)
                                                   :realm "test-realm")]}))]
-  (describe "ratelimit with 2 limiters"
+  (describe "ratelimit with 3 limiters"
+    (it "uses the admin limit for admins"
+      (let [rsp (-> (request :get "/")
+                    (header "Authorization" "Basic YWRtaW46YWRtaW4tcGFzcw==")
+                    app)]
+        (should= 200 (:status rsp))
+        (should= "19" (get-in rsp [:headers "X-RateLimit-Remaining"]))))
     (it "uses the user limit for authenticated requests"
       (let [rsp (-> (request :get "/")
                     (header "Authorization" "Basic YXBpLWtleTphcGktcGFzcw==")
