@@ -15,9 +15,8 @@
   {:limit n
    :key-prefix (str "U" (name r))
    :getter #(when-let [cur (-> % :session :cemerick.friend/identity :current)]
-              (if (contains? (get-in % [:session :cemerick.friend/identity :authentications cur :roles]) r)
-                cur
-                nil))})
+              (when (contains? (get-in % [:session :cemerick.friend/identity :authentications cur :roles]) r)
+                cur))})
 
 (def default-config
   {:limits [(ip-limit 100)]
