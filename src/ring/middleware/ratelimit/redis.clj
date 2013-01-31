@@ -16,4 +16,4 @@
   ([] (redis-backend (car/make-conn-spec)))
   ([spec] (redis-backend (car/make-conn-pool) spec))
   ([pool spec] (redis-backend pool spec "ratelimits"))
-  ([pool spec hashname] (RedisBackend. pool spec hashname (str hashname "-hour"))))
+  ([pool spec hashname] (RedisBackend. pool spec hashname (str hashname ":hour"))))
