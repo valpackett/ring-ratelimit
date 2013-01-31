@@ -4,10 +4,15 @@
   :license {:name "WTFPL"
             :url "https://en.wikipedia.org/wiki/WTFPL"}
   :dependencies [[org.clojure/clojure "1.4.0"]]
-  :plugins [[speclj "2.5.0"]]
-  :bootclasspath true
   :profiles {:dev {:dependencies [[speclj "2.5.0"]
+                                  [lein-release "1.0.0"]
                                   [ring-mock "0.1.3"]
                                   [com.cemerick/friend "0.1.3"]
                                   [com.taoensso/carmine "1.3.0"]]}}
+  :plugins [[speclj "2.5.0"]
+            [lein-release "1.0.0"]]
+  :bootclasspath true
+  :lein-release {:deploy-via :lein-deploy}
+  :repositories [["snapshots" "https://clojars.org/repo"]
+                 ["releases"  "https://clojars.org/repo"]]
   :test-paths ["spec/"])
