@@ -1,4 +1,4 @@
-(defproject ring-ratelimit "0.1.0"
+(defproject ring-ratelimit "0.1.1-SNAPSHOT"
   :description "Rate limit middleware for Ring"
   :url "https://github.com/myfreeweb/ring-ratelimit"
   :license {:name "WTFPL"
