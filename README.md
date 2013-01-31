@@ -16,10 +16,14 @@ Ring middleware for request rate limiting.
 If you're using [friend](https://github.com/cemerick/friend) authentication, you can use `user-limit` and `role-limit`:
 
 ```clojure
+; ...
+
 (def app (-> your-routes-or-whatever
              (wrap-ratelimit {:limits [(role-limit :admin 1000)
                                        (user-limit 500)
-                                       (ip-limit 100)]})))
+                                       (ip-limit 100)]})
+             (friend/authenticate ; ...
+             )))
 ; 1000 per hour per user for authenticated users with role :admin
 ; 500 per hour per user for all other authenticated users
 ; 100 per hour per IP address for anonymous users
