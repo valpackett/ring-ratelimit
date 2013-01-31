@@ -18,7 +18,7 @@
               (when (contains? (get-in % [:session :cemerick.friend/identity :authentications cur :roles]) r)
                 cur))})
 
-(def default-config
+(defn default-config []
   {:limits [(ip-limit 100)]
    :backend (local-atom-backend)
    :err-handler (fn [req]
@@ -29,7 +29,7 @@
 (defn wrap-ratelimit
   ([handler] (wrap-ratelimit handler {}))
   ([handler config]
-   (let [config* (merge default-config config)
+   (let [config* (merge (default-config) config)
          limits (:limits config*)
          backend (:backend config*)
          err-handler (:err-handler config*)]
