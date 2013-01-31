@@ -1,4 +1,4 @@
-(defproject ring-ratelimit "0.1.0-SNAPSHOT"
+(defproject ring-ratelimit "0.1.0"
   :description "Rate limit middleware for Ring"
   :url "https://github.com/myfreeweb/ring-ratelimit"
   :license {:name "WTFPL"
@@ -13,6 +13,6 @@
             [lein-release "1.0.0"]]
   :bootclasspath true
   :lein-release {:deploy-via :lein-deploy}
-  :repositories [["snapshots" "https://clojars.org/repo"]
-                 ["releases"  "https://clojars.org/repo"]]
+  :repositories [["snapshots" {:url "https://clojars.org/repo" :creds :gpg}]
+                 ["releases"  {:url "https://clojars.org/repo" :creds :gpg}]]
   :test-paths ["spec/"])
