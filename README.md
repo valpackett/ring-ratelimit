@@ -1,4 +1,4 @@
-# ring-ratelimit
+# ring-ratelimit [![Build Status](https://travis-ci.org/myfreeweb/ring-ratelimit.png?branch=master)](https://travis-ci.org/myfreeweb/ring-ratelimit)
 
 Ring middleware for request rate limiting.
 
