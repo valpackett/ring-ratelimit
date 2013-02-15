@@ -1,7 +1,7 @@
 Current [semantic](http://semver.org/) version:
 
 ```clojure
-[ring-ratelimit "0.1.0"]
+[ring-ratelimit "0.2.0"]
 ```
 
 # ring-ratelimit [![Build Status](https://travis-ci.org/myfreeweb/ring-ratelimit.png?branch=master)](https://travis-ci.org/myfreeweb/ring-ratelimit)
