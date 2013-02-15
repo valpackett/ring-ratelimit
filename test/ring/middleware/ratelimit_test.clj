@@ -1,11 +1,11 @@
-(ns ring.middleware.ratelimit-spec
+(ns ring.middleware.ratelimit-test
   (:import [java.util Date])
   (:require [clojure.string :as string]
             [cemerick.friend :as friend]
             (cemerick.friend [workflows :as workflows]
                              [credentials :as creds]
                              [openid :as openid]))
-  (:use [speclj core]
+  (:use [midje sweet]
         [ring.middleware ratelimit]
         [ring.middleware.ratelimit util backend local-atom redis]
         [ring.mock request]))
@@ -17,27 +17,27 @@
                 (wrap-ratelimit {:limits [(ip-limit 5)]
                                  :backend backend}))]
 
-    (describe (str "ratelimit <" (last (string/split (str (type backend)) #"\.")) ">")
-      (before
-        (reset-limits! backend (current-hour)))
+    (facts (str "ratelimit <" (last (string/split (str (type backend)) #"\.")) ">")
 
-      (it "shows the rate limit"
+      (reset-limits! backend (current-hour))
+
+      (fact "shows the rate limit"
         (let [rsp (-> (request :get "/") app)]
-          (should= 418 (:status rsp))
-          (should= "5" (get-in rsp [:headers "X-RateLimit-Limit"]))
-          (should= "4" (get-in rsp [:headers "X-RateLimit-Remaining"]))))
+          (fact (:status rsp) => 418)
+          (fact (get-in rsp [:headers "X-RateLimit-Limit"]) => "5")
+          (fact (get-in rsp [:headers "X-RateLimit-Remaining"]) => "4")))
 
-      (it "returns 429 when there are no requests left"
+      (fact "returns 429 when there are no requests left"
         (dotimes [_ 5] (-> (request :get "/") app))
         (let [rsp (-> (request :get "/") app)]
-          (should= 429 (:status rsp))
-          (should= "0" (get-in rsp [:headers "X-RateLimit-Remaining"]))))
+          (fact (:status rsp) => 429)
+          (fact (get-in rsp [:headers "X-RateLimit-Remaining"]) => "0")))
 
-      (it "resets the limit every hour"
+      (fact "resets the limit every hour"
         (with-redefs [current-hour (fn [] (- (.getHours (Date.)) 1))]
           (dotimes [_ 5] (-> (request :get "/") app))
-          (should= 429 (-> (request :get "/") app :status)))
-        (should= 418 (-> (request :get "/") app :status))))))
+          (fact (-> (request :get "/") app :status) => 429))
+        (fact (-> (request :get "/") app :status) => 418)))))
 
 ; why do I test with real friend?
 
@@ -56,20 +56,20 @@
                                     :workflows [(workflows/http-basic
                                                   :credential-fn (partial creds/bcrypt-credential-fn api-users)
                                                   :realm "test-realm")]}))]
-  (describe "ratelimit with 3 limiters"
-    (it "uses the admin limit for admins"
+  (facts "ratelimit with 3 limiters"
+    (fact "uses the admin limit for admins"
       (let [rsp (-> (request :get "/")
                     (header "Authorization" "Basic YWRtaW46YWRtaW4tcGFzcw==")
                     app)]
-        (should= 200 (:status rsp))
-        (should= "19" (get-in rsp [:headers "X-RateLimit-Remaining"]))))
-    (it "uses the user limit for authenticated requests"
+        (fact (:status rsp) => 200)
+        (fact (get-in rsp [:headers "X-RateLimit-Remaining"]) => "19")))
+    (fact "uses the user limit for authenticated requests"
       (let [rsp (-> (request :get "/")
                     (header "Authorization" "Basic YXBpLWtleTphcGktcGFzcw==")
                     app)]
-        (should= 200 (:status rsp))
-        (should= "9" (get-in rsp [:headers "X-RateLimit-Remaining"]))))
-    (it "uses the ip limit for unauthenticated requests"
+        (fact (:status rsp) => 200)
+        (fact (get-in rsp [:headers "X-RateLimit-Remaining"]) => "9")))
+    (fact "uses the ip limit for unauthenticated requests"
       (let [rsp (-> (request :get "/") app)]
-        (should= 200 (:status rsp))
-        (should= "4" (get-in rsp [:headers "X-RateLimit-Remaining"]))))))
+        (fact (:status rsp) => 200)
+        (fact (get-in rsp [:headers "X-RateLimit-Remaining"]) => "4")))))
