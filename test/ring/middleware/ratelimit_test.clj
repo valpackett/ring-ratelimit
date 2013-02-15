@@ -10,6 +10,9 @@
         [ring.middleware.ratelimit util backend local-atom redis]
         [ring.mock request]))
 
+(defn limit [rsp] (get-in rsp [:headers "X-RateLimit-Limit"]))
+(defn remaining [rsp] (get-in rsp [:headers "X-RateLimit-Remaining"]))
+
 (doseq [backend [(local-atom-backend) (redis-backend)]]
   (let [app (-> (fn [req] {:status 418
                            :headers {"Content-Type" "air/plane"}
@@ -23,23 +26,21 @@
 
       (fact "shows the rate limit"
         (let [rsp (-> (request :get "/") app)]
-          (fact (:status rsp) => 418)
-          (fact (get-in rsp [:headers "X-RateLimit-Limit"]) => "5")
-          (fact (get-in rsp [:headers "X-RateLimit-Remaining"]) => "4")))
+          (:status rsp) => 418
+          (limit rsp) => "5"
+          (remaining rsp) => "4"))
 
       (fact "returns 429 when there are no requests left"
         (dotimes [_ 5] (-> (request :get "/") app))
         (let [rsp (-> (request :get "/") app)]
-          (fact (:status rsp) => 429)
-          (fact (get-in rsp [:headers "X-RateLimit-Remaining"]) => "0")))
+          (:status rsp) => 429
+          (remaining rsp) => "0"))
 
       (fact "resets the limit every hour"
         (with-redefs [current-hour (fn [] (- (.getHours (Date.)) 1))]
           (dotimes [_ 5] (-> (request :get "/") app))
-          (fact (-> (request :get "/") app :status) => 429))
-        (fact (-> (request :get "/") app :status) => 418)))))
-
-; why do I test with real friend?
+          (-> (request :get "/") app :status) => 429)
+        (-> (request :get "/") app :status) => 418))))
 
 (let [api-users {"api-key" {:username "api-key"
                             :password (creds/hash-bcrypt "api-pass")
@@ -61,15 +62,15 @@
       (let [rsp (-> (request :get "/")
                     (header "Authorization" "Basic YWRtaW46YWRtaW4tcGFzcw==")
                     app)]
-        (fact (:status rsp) => 200)
-        (fact (get-in rsp [:headers "X-RateLimit-Remaining"]) => "19")))
+        (:status rsp) => 200
+        (remaining rsp) => "19"))
     (fact "uses the user limit for authenticated requests"
       (let [rsp (-> (request :get "/")
                     (header "Authorization" "Basic YXBpLWtleTphcGktcGFzcw==")
                     app)]
-        (fact (:status rsp) => 200)
-        (fact (get-in rsp [:headers "X-RateLimit-Remaining"]) => "9")))
+        (:status rsp) => 200
+        (remaining rsp) => "9"))
     (fact "uses the ip limit for unauthenticated requests"
       (let [rsp (-> (request :get "/") app)]
-        (fact (:status rsp) => 200)
-        (fact (get-in rsp [:headers "X-RateLimit-Remaining"]) => "4")))))
+        (:status rsp) => 200
+        (remaining rsp) => "4"))))
