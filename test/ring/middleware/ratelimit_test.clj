@@ -7,10 +7,10 @@
                              [openid :as openid]))
   (:use [midje sweet]
         [ring.middleware ratelimit]
-        [ring.middleware.ratelimit util backend local-atom redis]
+        [ring.middleware.ratelimit util backend local-atom redis limits]
         [ring.mock request]))
 
-(defn limit [rsp] (get-in rsp [:headers "X-RateLimit-Limit"]))
+(defn rsp-limit [rsp] (get-in rsp [:headers "X-RateLimit-Limit"]))
 (defn remaining [rsp] (get-in rsp [:headers "X-RateLimit-Remaining"]))
 
 (doseq [backend [(local-atom-backend) (redis-backend)]]
@@ -27,7 +27,7 @@
       (fact "shows the rate limit"
         (let [rsp (-> (request :get "/") app)]
           (:status rsp) => 418
-          (limit rsp) => "5"
+          (rsp-limit rsp) => "5"
           (remaining rsp) => "4"))
 
       (fact "returns 429 when there are no requests left"
@@ -51,7 +51,9 @@
       app (-> (fn [req] {:status 200
                          :headers {"Content-Type" "text/plain"}
                          :body (with-out-str (pr req))})
-              (wrap-ratelimit {:limits [(role-limit :admin 20) (user-limit 10) (ip-limit 5)]
+              (wrap-ratelimit {:limits [(role-limit :admin 20)
+                                        (-> 10 limit wrap-limit-user wrap-limit-ip)
+                                        (ip-limit 5)]
                                :backend (local-atom-backend)})
               (friend/authenticate {:allow-anon? true
                                     :workflows [(workflows/http-basic
@@ -69,6 +71,17 @@
                     (header "Authorization" "Basic YXBpLWtleTphcGktcGFzcw==")
                     app)]
         (:status rsp) => 200
+        (remaining rsp) => "9"))
+    (fact "uses the composed limit for user-ip"
+      (let [rsp (-> (request :get "/")
+                    (header "Authorization" "Basic YXBpLWtleTphcGktcGFzcw==")
+                    (assoc :remote-addr "host-one")
+                    app)]
+        (remaining rsp) => "9")
+      (let [rsp (-> (request :get "/")
+                    (header "Authorization" "Basic YXBpLWtleTphcGktcGFzcw==")
+                    (assoc :remote-addr "host-two")
+                    app)]
         (remaining rsp) => "9"))
     (fact "uses the ip limit for unauthenticated requests"
       (let [rsp (-> (request :get "/") app)]

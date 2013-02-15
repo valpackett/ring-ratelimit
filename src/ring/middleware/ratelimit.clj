@@ -1,22 +1,11 @@
 (ns ring.middleware.ratelimit
-  (:use [ring.middleware.ratelimit util backend local-atom]))
+  (:use [ring.middleware.ratelimit util backend local-atom limits]))
 
-(defn ip-limit [n]
-  {:limit n
-   :key-prefix "IP"
-   :getter :remote-addr})
+(defn ip-limit [n] (-> n limit wrap-limit-ip))
 
-(defn user-limit [n]
-  {:limit n
-   :key-prefix "U"
-   :getter #(-> % :session :cemerick.friend/identity :current)})
+(defn user-limit [n] (-> n limit wrap-limit-user))
 
-(defn role-limit [r n]
-  {:limit n
-   :key-prefix (str "U" (name r))
-   :getter #(when-let [cur (-> % :session :cemerick.friend/identity :current)]
-              (when (contains? (get-in % [:session :cemerick.friend/identity :authentications cur :roles]) r)
-                cur))})
+(defn role-limit [role n] (-> n limit (wrap-limit-role role)))
 
 (defn default-config []
   {:limits [(ip-limit 100)]
@@ -36,7 +25,7 @@
      (fn [req]
        (when (not= (get-hour backend) (current-hour))
          (reset-limits! backend (current-hour)))
-       (let [limiter (first (filter #(not (nil? ((:getter %) req))) limits))
+       (let [limiter (first (filter #((:filter %) req) limits))
              limit (:limit limiter)
              thekey (str (:key-prefix limiter) ((:getter limiter) req))
              current (get-limit backend limit thekey)
