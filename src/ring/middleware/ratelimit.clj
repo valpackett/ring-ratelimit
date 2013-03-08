@@ -23,14 +23,17 @@
          backend (:backend config*)
          err-handler (:err-handler config*)]
      (fn [req]
-       (when (not= (get-hour backend) (current-hour))
-         (reset-limits! backend (current-hour)))
-       (let [limiter (first (filter #((:filter %) req) limits))
-             limit (:limit limiter)
-             thekey (str (:key-prefix limiter) ((:getter limiter) req))
-             current (get-limit backend limit thekey)
-             rl-headers {"X-RateLimit-Limit" (str limit)
-                         "X-RateLimit-Remaining" (str (- limit current))}
-             h (if (< current limit) handler err-handler)
-             rsp (h req)]
-         (assoc rsp :headers (merge (:headers rsp) rl-headers)))))))
+       (if (available? backend)
+         (do
+           (when (not= (get-hour backend) (current-hour))
+             (reset-limits! backend (current-hour)))
+           (let [limiter (first (filter #((:filter %) req) limits))
+                 limit (:limit limiter)
+                 thekey (str (:key-prefix limiter) ((:getter limiter) req))
+                 current (get-limit backend limit thekey)
+                 rl-headers {"X-RateLimit-Limit" (str limit)
+                             "X-RateLimit-Remaining" (str (- limit current))}
+                 h (if (< current limit) handler err-handler)
+                 rsp (h req)]
+             (assoc rsp :headers (merge (:headers rsp) rl-headers))))
+         (handler req))))))

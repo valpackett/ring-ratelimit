@@ -1,5 +1,6 @@
 (ns ring.middleware.ratelimit.redis
-  (:require [taoensso.carmine :as car])
+  (:require [taoensso.carmine :as car]
+            [taoensso.carmine.connections :as conns])
   (:use [ring.middleware.ratelimit backend]))
 
 (deftype RedisBackend [pool spec hashname hourname] Backend
@@ -10,7 +11,9 @@
       (car/del hashname)
       (car/set hourname hour)))
   (get-hour [self]
-    (Integer/parseInt (car/with-conn pool spec (car/get hourname)))))
+    (Integer/parseInt (car/with-conn pool spec (car/get hourname))))
+  (available? [self]
+    (conns/conn-alive? (conns/get-conn pool spec))))
 
 (defn redis-backend
   ([] (redis-backend (car/make-conn-spec)))

@@ -13,7 +13,8 @@
   (reset-limits! [self hour]
     (swap! rate-map (constantly {}))
     (swap! hour-atom (fn [_] hour)))
-  (get-hour [self] @hour-atom))
+  (get-hour [self] @hour-atom)
+  (available? [self] true))
 
 (defn local-atom-backend
   ([] (local-atom-backend (atom {})))
