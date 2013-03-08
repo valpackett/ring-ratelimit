@@ -39,6 +39,20 @@ ring-ratelimit supports Redis via the [Carmine](https://github.com/ptaoussanis/c
 The `redis-backend` function, when called with no args, calls `make-conn-pool` and `make-conn-spec` with no args (ie. uses Redis on localhost) and uses `ratelimits` for Redis hash name.
 You can provide the Carmine configuration objects (pool, spec) and the hash name as args.
 
+If you're running your app on [Immutant](http://immutant.org), there's a backend for you too:
+
+```clojure
+(ns your.app
+  (:require [immutant.cache :as c])
+  (:use [ring.middleware ratelimit]
+        [ring.middleware.ratelimit immutant]))
+; ...
+
+; ...wrapping thing skipped...
+(wrap-ratelimit {:limits [(ip-limit 100)]
+                 :backend (immutant-backend (c/cache "ratelimit" :mode :replicated))})
+```
+
 ### Advanced usage
 
 If you're using [friend](https://github.com/cemerick/friend) authentication, you can use `user-limit` and `role-limit`:
