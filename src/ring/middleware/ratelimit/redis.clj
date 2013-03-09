@@ -13,7 +13,8 @@
   (get-hour [self]
     (Integer/parseInt (car/with-conn pool spec (car/get hourname))))
   (available? [self]
-    (conns/conn-alive? (conns/get-conn pool spec))))
+    (= "PONG" (try (car/with-conn pool spec (car/ping))
+                (catch Throwable _)))))
 
 (defn redis-backend
   ([] (redis-backend (car/make-conn-spec)))

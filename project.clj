@@ -4,13 +4,14 @@
   :license {:name "WTFPL"
             :url "http://www.wtfpl.net/about/"}
   :dependencies [[org.clojure/clojure "1.4.0"]]
-  :profiles {:dev {:dependencies [[midje "1.5-beta1"]
+  :profiles {:dev {:dependencies [[midje "1.5.0"]
                                   [lein-release "1.0.0"]
                                   [ring-mock "0.1.3"]
                                   [com.cemerick/friend "0.1.3"]
-                                  [com.taoensso/carmine "1.3.0"]]}}
-  :plugins [[lein-midje "3.0-alpha4"]
+                                  [com.taoensso/carmine "1.6.0"]]}}
+  :plugins [[lein-midje "3.0.0"]
             [lein-release "1.0.0"]]
+  :aliases {"test" ["midje" "ring.middleware.ratelimit-test"]}
   :bootclasspath true
   :lein-release {:deploy-via :lein-deploy}
   :repositories [["snapshots" {:url "https://clojars.org/repo" :creds :gpg}]
