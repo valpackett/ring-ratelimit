@@ -11,8 +11,8 @@
   (get-limit [self limit k]
     ((swap! rate-map update-state limit k) k))
   (reset-limits! [self hour]
-    (swap! rate-map (constantly {}))
-    (swap! hour-atom (fn [_] hour)))
+    (reset! rate-map {})
+    (reset! hour-atom hour))
   (get-hour [self] @hour-atom)
   (available? [self] true))
 
