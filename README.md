@@ -83,7 +83,7 @@ You can do really amazing (but not very useful) stuff:
 (def app (-> your-routes-or-whatever
              (wrap-ratelimit {:limits [(-> 500 limit
                                            (wrap-limit-header "X-My-Api-Key")
-                                           (wrap-limit-param :awesomeness)
+                                           (wrap-limit-param "awesomeness")
                                            (wrap-limit-role :admin)
                                            wrap-limit-ip)
                                        (ip-limit 100)]})
@@ -114,10 +114,18 @@ If you use a routing library like Compojure, you can limit different parts of yo
 ```clojure
 (ns hard.core
   (:use [compojure core]
-        [ring.middleware ratelimit]
+        [ring.middleware ratelimit params]
         [ring.middleware.ratelimit redis limits]))
 
-; ...handlers...
+(defn easy-handler [req]
+  {:status 200
+   :headers {"Content-Type" "text/plain"}
+   :body "easy"})
+
+(defn hard-handler [req]
+  {:status 200
+   :headers {"Content-Type" "text/plain"}
+   :body "hard"})
 
 (def default-limit
   {:limits [(user-limit 1000) (ip-limit 100)]
@@ -133,11 +141,15 @@ If you use a routing library like Compojure, you can limit different parts of yo
         (wrap-ratelimit
           (assoc default-limit :limits
             [(-> 30 limit
-                 (wrap-limit-param :query)
+                 (wrap-limit-param "query")
                  wrap-limit-user)
              (-> 10 limit
-                 (wrap-limit-param :query)
+                 (wrap-limit-param "query")
                  wrap-limit-ip)])))))
+
+(def awesome-app
+  (-> awesome-routes
+      wrap-params))
 ```
 
 ## License
