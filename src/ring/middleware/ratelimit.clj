@@ -20,7 +20,7 @@
                   {:status 429
                    :headers {"Content-Type" "application/json"
                              "Retry-After" (let [d (Date.)]
-                                             (.setHours d (+ 1 (.getHours d)))
+                                             (.setHours d (inc (.getHours d)))
                                              (.setMinutes d 0)
                                              (.setSeconds d 0)
                                              (.format (formatter "EEE, dd MMM yyyy HH:mm:ss zzz") d))}
