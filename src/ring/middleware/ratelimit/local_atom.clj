@@ -16,7 +16,10 @@
   (get-hour [self] @hour-atom)
   (available? [self] true))
 
+(def ^:private default-rate-map (atom {}))
+(def ^:private default-hour (atom (current-hour)))
+
 (defn local-atom-backend
-  ([] (local-atom-backend (atom {})))
-  ([rate-map] (local-atom-backend rate-map (atom (current-hour))))
+  ([] (local-atom-backend default-rate-map))
+  ([rate-map] (local-atom-backend rate-map default-hour))
   ([rate-map hour-atom] (LocalAtomBackend. rate-map hour-atom)))

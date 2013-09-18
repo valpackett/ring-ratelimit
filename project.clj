@@ -6,6 +6,7 @@
   :dependencies [[org.clojure/clojure "1.5.1"]]
   :profiles {:dev {:dependencies [[midje "1.5.0"]
                                   [lein-release "1.0.0"]
+                                  [ring/ring-core "1.2.0"]
                                   [ring-mock "0.1.3"]
                                   [com.cemerick/friend "0.1.5"]
                                   [com.taoensso/carmine "2.2.0"]]}}
