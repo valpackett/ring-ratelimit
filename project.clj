@@ -8,6 +8,8 @@
                                   [lein-release "1.0.0"]
                                   [ring/ring-core "1.2.0"]
                                   [ring-mock "0.1.3"]
+                                  [http-kit "2.1.5"]
+                                  [compojure "1.1.5"]
                                   [com.cemerick/friend "0.1.5"]
                                   [com.taoensso/carmine "2.2.0"]]}}
   :plugins [[lein-midje "3.0.0"]
