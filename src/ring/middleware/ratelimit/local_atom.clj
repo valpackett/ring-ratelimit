@@ -3,9 +3,7 @@
 
 (defn- update-state [state limit k]
   (assoc state k
-    (if-let [v (state k)]
-      (min limit (inc v))
-      1)))
+    (if-let [v (state k)] (inc v) 1)))
 
 (deftype LocalAtomBackend [rate-map hour-atom] Backend
   (get-limit [self limit k]

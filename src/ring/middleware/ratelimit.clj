@@ -42,9 +42,11 @@
              (let [limit (:limit limiter)
                    thekey (str (:key-prefix limiter) ((:getter limiter) req))
                    current (get-limit backend limit thekey)
+                   remaining (- limit current)
+                   is-over (< remaining 0)
                    rl-headers {"X-RateLimit-Limit" (str limit)
-                               "X-RateLimit-Remaining" (str (- limit current))}
-                   h (if (< current limit) handler err-handler)
+                               "X-RateLimit-Remaining" (if is-over "0" (str remaining))}
+                   h (if is-over err-handler handler)
                    rsp (h req)]
                (assoc rsp :headers (merge (:headers rsp) rl-headers)))
              (handler req)))

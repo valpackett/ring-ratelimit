@@ -5,7 +5,7 @@
 
 (deftype RedisBackend [pool spec hashname hourname] Backend
   (get-limit [self limit k]
-    (min limit (car/with-conn pool spec (car/hincrby hashname k 1))))
+    (car/with-conn pool spec (car/hincrby hashname k 1)))
   (reset-limits! [self hour]
     (car/with-conn pool spec
       (car/del hashname)

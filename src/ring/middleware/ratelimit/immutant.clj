@@ -6,11 +6,9 @@
   (get-limit [self limit k]
     (transaction
       (if-let [current (get obj k)]
-        (if (< current limit)
-          (let [newl (inc current)]
-            (put obj k newl)
-            newl)
-          limit)
+        (let [newl (inc current)]
+          (put obj k newl)
+          newl)
         (do
           (put obj k 1)
           1))))
