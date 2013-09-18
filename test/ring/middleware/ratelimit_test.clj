@@ -86,4 +86,4 @@
     (fact "uses the ip limit for unauthenticated requests"
       (let [rsp (-> (request :get "/") app)]
         (:status rsp) => 200
-        (remaining rsp) => "4"))))
+        (remaining rsp) => "3"))))
