@@ -73,7 +73,7 @@ If you're using [friend](https://github.com/cemerick/friend) authentication, you
 
 Also, you can compose limits if you use the `ring.middleware.ratelimit.limits` namespace!
 It's like Ring middleware for limits.
-You can do really amazing stuff:
+You can do really amazing (but not very useful) stuff:
 
 ```clojure
 (ns your.app
@@ -91,6 +91,7 @@ You can do really amazing stuff:
              )))
 ; 500 per hour per user per IP per ?awesomeness= param per X-My-Api-Key HTTP header for users with role :admin
 ; 100 per hour per IP for anonymous users
+; note: with composed limits changing one parameter = a different limit key
 ```
 
 You can use a custom handler for the error (when the user has no requests left):
