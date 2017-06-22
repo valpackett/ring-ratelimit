@@ -82,7 +82,7 @@ You can do really amazing (but not very useful) stuff:
 
 (def app (-> your-routes-or-whatever
              (wrap-ratelimit {:limits [(-> 500 limit
-                                           (wrap-limit-header "X-My-Api-Key")
+                                           (wrap-limit-header "x-my-api-key")
                                            (wrap-limit-param "awesomeness")
                                            (wrap-limit-role :admin)
                                            wrap-limit-ip)
